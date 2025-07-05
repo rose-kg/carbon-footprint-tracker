@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carbon Footprint Logger</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>🌱 Carbon Footprint Logger</h1>
+        <p>Track your daily activities and their environmental impact</p>
+      </header>
+
+      <main>
+        <!-- Activity Input Section -->
+        <section class="input-section">
+          <h2>Log New Activity</h2>
+          <form id="activity-form">
+            <div class="form-group">
+              <label for="category">Category:</label>
+              <select id="category" required>
+                <option value="">Select Category</option>
+                <option value="transport">🚗 Transport</option>
+                <option value="food">🍽️ Food</option>
+                <option value="energy">⚡ Energy</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="activity">Activity:</label>
+              <select id="activity" required disabled>
+                <option value="">Select Activity</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="amount">Amount:</label>
+              <input
+                type="number"
+                id="amount"
+                step="0.1"
+                min="0"
+                required
+                disabled
+              />
+              <span id="unit-label"></span>
+            </div>
+
+            <button type="submit">Add Activity</button>
+          </form>
+        </section>
+
+        <!-- Summary Section -->
+        <section class="summary-section">
+          <div class="summary-cards">
+            <div class="summary-card">
+              <h3>Today's Total</h3>
+              <span id="daily-total">0.0 kg CO₂</span>
+            </div>
+            <div class="summary-card">
+              <h3>This Week</h3>
+              <span id="weekly-total">0.0 kg CO₂</span>
+            </div>
+            <div class="summary-card">
+              <h3>Activities Logged</h3>
+              <span id="activity-count">0</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Filter Section -->
+        <section class="filter-section">
+          <h2>Filter Activities</h2>
+          <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="transport">
+              🚗 Transport
+            </button>
+            <button class="filter-btn" data-filter="food">🍽️ Food</button>
+            <button class="filter-btn" data-filter="energy">⚡ Energy</button>
+          </div>
+        </section>
+
+        <!-- Activities List -->
+        <section class="activities-section">
+          <h2>Recent Activities</h2>
+          <div id="activities-list" class="activities-list">
+            <p class="no-activities">
+              No activities logged yet. Start by adding your first activity
+              above!
+            </p>
+          </div>
+          <!-- Activity item template -->
+          <template id="activity-item-template">
+            <div class="activity-item">
+              <span class="activity-info"></span>
+              <div class="delete-btn-wrapper">
+                <button class="delete-btn">Delete</button>
+              </div>
+            </div>
+          </template>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="charts-section">
+          <h2>Visual Summary</h2>
+          <div class="charts-container">
+            <div class="chart-wrapper">
+              <h3>Emissions by Category</h3>
+              <canvas id="category-chart"></canvas>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
