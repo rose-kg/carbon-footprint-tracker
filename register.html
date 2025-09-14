@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Footprint Logger</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="auth-container">
+    <h2>Create Account</h2>
+    <form id="register-form">
+      <input type="text" id="register-fullname" placeholder="Full Name" required>
+      <input type="email" id="register-email" placeholder="Email" required>
+      <input type="text" id="register-username" placeholder="Username" required>
+      <input type="password" id="register-password" placeholder="Password" required>
+      <input type="password" id="register-confirm-password" placeholder="Confirm Password" required>
+      <button type="submit">Register</button>
+      <div id="register-error" class="error-message"></div>
+      <div id="register-success" class="success-message"></div>
+    </form>
+    <div class="auth-link">Already have an account? <a href="login.html">Login</a></div>
+  </div>
+  <script src="register.js"></script>
+</body>
+</html>
