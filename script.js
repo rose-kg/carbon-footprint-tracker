@@ -46,12 +46,20 @@ let unitText = document.getElementById("unit-label");
 let form = document.getElementById("activity-form");
 let actList = document.getElementById("activities-list");
 
+const API_URL = "http://localhost:3001/api";
+const jwt = localStorage.getItem("jwt");
+
+if (!jwt) {
+  window.location.href = "login.html";
+}
+
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("DOM Loaded");
-  loadActivitiesFromLocal();
   addEventListeners();
-  updateSummaryInfo();
-  updateChartsOnLoad();
+  fetchAndRenderActivities();
+  fetchAndRenderSummary();
+  fetchAndRenderCommunityAverage();
+  fetchAndRenderWeeklySummary();
+  fetchAndRenderLeaderboard();
 });
 
 function addEventListeners() {
@@ -102,89 +110,104 @@ function catChanged() {
   }
 }
 
-function formSubmitted(e) {
+async function formSubmitted(e) {
   e.preventDefault();
-  console.log("Form submitted!");
-
   let cat = catSelect.value;
   let actKey = actSelect.value;
   let amt = parseFloat(amtInput.value);
-
   if (!cat || !actKey || isNaN(amt)) {
     alert("Fill all fields");
     return;
   }
-
   let actInfo = activityData[cat][actKey];
-  let co2 = amt * actInfo.co2PerUnit;
-
   let newAct = {
-    id: Date.now(),
     category: cat,
     name: actInfo.name,
     amount: amt,
     unit: actInfo.unit,
-    co2Emissions: co2,
+    co2Emissions: amt * actInfo.co2PerUnit,
     timestamp: new Date().toISOString(),
   };
+  try {
+    await fetch(`${API_URL}/activities`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${jwt}`,
+      },
+      body: JSON.stringify(newAct),
+    });
+    form.reset();
+    amtInput.disabled = true;
+    actSelect.disabled = true;
+    unitText.textContent = "";
+    fetchAndRenderActivities();
+    fetchAndRenderSummary();
+    fetchAndRenderWeeklySummary();
+    fetchAndRenderCommunityAverage();
+    fetchAndRenderLeaderboard();
+  } catch (err) {
+    alert("Failed to add activity");
+  }
+}
 
-  activitiesListArray.unshift(newAct);
-  saveActivitiesToLocal();
-  renderActivitiesList();
-  updateSummaryInfo();
-  updateChartsOnLoad();
-
-  form.reset();
-  amtInput.disabled = true;
-  actSelect.disabled = true;
-  unitText.textContent = "";
+async function fetchAndRenderActivities() {
+  try {
+    const res = await fetch(`${API_URL}/activities`, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
+    let data = await res.json();
+    activitiesListArray = data;
+    renderActivitiesList();
+  } catch (err) {
+    actList.innerHTML = '<p class="no-activities">Failed to load activities.</p>';
+  }
 }
 
 function renderActivitiesList() {
   let filtered = activitiesListArray;
   if (currentFilter !== "all") {
-    filtered = activitiesListArray.filter(
-      (act) => act.category === currentFilter
-    );
+    filtered = activitiesListArray.filter((act) => act.category === currentFilter);
   }
-
   if (filtered.length === 0) {
-    actList.innerHTML =
-      "<p class='no-activities'>No activities logged yet. Start by adding your first activity above!</p>";
+    actList.innerHTML = "<p class='no-activities'>No activities logged yet. Start by adding your first activity above!</p>";
     return;
   }
-
   actList.innerHTML = "";
   const template = document.getElementById("activity-item-template");
-
   filtered.forEach(function (act) {
     const clone = template.content.cloneNode(true);
-    clone.querySelector(".activity-info").textContent = `${act.name} - ${
-      act.amount
-    } ${act.unit} - ${act.co2Emissions.toFixed(2)} kg CO2`;
+    clone.querySelector(".activity-info").textContent = `${act.name} - ${act.amount} ${act.unit} - ${act.co2Emissions.toFixed(2)} kg CO2`;
     const delBtn = clone.querySelector(".delete-btn");
     delBtn.onclick = function () {
-      deleteActivity(act.id);
+      deleteActivity(act._id);
     };
     actList.appendChild(clone);
   });
 }
 
-function deleteActivity(id) {
-  activitiesListArray = activitiesListArray.filter((a) => a.id !== id);
-  saveActivitiesToLocal();
-  renderActivitiesList();
-  updateSummaryInfo();
-  updateChartsOnLoad();
+async function deleteActivity(id) {
+  try {
+    await fetch(`${API_URL}/activities/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
+    fetchAndRenderActivities();
+    fetchAndRenderSummary();
+    fetchAndRenderWeeklySummary();
+    fetchAndRenderCommunityAverage();
+    fetchAndRenderLeaderboard();
+  } catch (err) {
+    alert("Failed to delete activity");
+  }
 }
 
-function updateSummaryInfo() {
+async function fetchAndRenderSummary() {
+  // Use activitiesListArray for now
   let today = new Date().toDateString();
   let weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-
   let todayTotal = 0;
   let weekTotal = 0;
-
   activitiesListArray.forEach(function (act) {
     let actDate = new Date(act.timestamp);
     if (actDate.toDateString() === today) {
@@ -194,13 +217,60 @@ function updateSummaryInfo() {
       weekTotal += act.co2Emissions;
     }
   });
+  document.getElementById("daily-total").textContent = todayTotal.toFixed(1) + " kg CO2";
+  document.getElementById("weekly-total").textContent = weekTotal.toFixed(1) + " kg CO2";
+  document.getElementById("activity-count").textContent = activitiesListArray.length;
+}
 
-  document.getElementById("daily-total").textContent =
-    todayTotal.toFixed(1) + " kg CO2";
-  document.getElementById("weekly-total").textContent =
-    weekTotal.toFixed(1) + " kg CO2";
-  document.getElementById("activity-count").textContent =
-    activitiesListArray.length;
+async function fetchAndRenderCommunityAverage() {
+  try {
+    const res = await fetch(`${API_URL}/activities/community-average`, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
+    const data = await res.json();
+    let avgDiv = document.getElementById('community-average');
+    if (!avgDiv) {
+      avgDiv = document.createElement('div');
+      avgDiv.id = 'community-average';
+      document.querySelector('.summary-section').appendChild(avgDiv);
+    }
+    avgDiv.innerHTML = `<h3>Community Average</h3><span>${data.average.toFixed(1)} kg CO2</span>`;
+  } catch (err) {}
+}
+
+async function fetchAndRenderWeeklySummary() {
+  try {
+    const res = await fetch(`${API_URL}/activities/weekly`, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
+    const data = await res.json();
+    let streakDiv = document.getElementById('weekly-streak');
+    if (!streakDiv) {
+      streakDiv = document.createElement('div');
+      streakDiv.id = 'weekly-streak';
+      document.querySelector('.summary-section').appendChild(streakDiv);
+    }
+    // Simple streak: count days with activity in last 7 days
+    const days = new Set(data.map(a => new Date(a.timestamp).toDateString()));
+    streakDiv.innerHTML = `<h3>Weekly Streak</h3><span>${days.size} days active</span>`;
+  } catch (err) {}
+}
+
+async function fetchAndRenderLeaderboard() {
+  try {
+    const res = await fetch(`${API_URL}/activities/leaderboard`, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
+    const data = await res.json();
+    let lbDiv = document.getElementById('leaderboard');
+    if (!lbDiv) {
+      lbDiv = document.createElement('div');
+      lbDiv.id = 'leaderboard';
+      document.querySelector('.summary-section').appendChild(lbDiv);
+    }
+    lbDiv.innerHTML = `<h3>Leaderboard (Lowest CO2)</h3>` +
+      data.map((u, i) => `<div>${i+1}. ${u.username}: ${u.total.toFixed(1)} kg CO2</div>`).join('');
+  } catch (err) {}
 }
 
 function updateChartsOnLoad() {
@@ -249,17 +319,3 @@ function updateCategoryPieChart() {
   });
 }
 
-function saveActivitiesToLocal() {
-  localStorage.setItem(
-    "carbonFootprintActivities",
-    JSON.stringify(activitiesListArray)
-  );
-}
-
-function loadActivitiesFromLocal() {
-  let data = localStorage.getItem("carbonFootprintActivities");
-  if (data) {
-    activitiesListArray = JSON.parse(data);
-    renderActivitiesList();
-  }
-}
