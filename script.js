@@ -159,6 +159,7 @@ async function fetchAndRenderActivities() {
     let data = await res.json();
     activitiesListArray = data;
     renderActivitiesList();
+    updateCategoryPieChart();
   } catch (err) {
     actList.innerHTML = '<p class="no-activities">Failed to load activities.</p>';
   }
