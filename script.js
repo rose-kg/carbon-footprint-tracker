@@ -60,7 +60,45 @@ document.addEventListener("DOMContentLoaded", function () {
   fetchAndRenderCommunityAverage();
   fetchAndRenderWeeklySummary();
   fetchAndRenderLeaderboard();
+  fetchAndRenderWeeklyGoal();
+  setupWebSocketForTips();
 });
+async function fetchAndRenderWeeklyGoal() {
+  try {
+    const res = await fetch(`${API_URL}/insights/weekly`, {
+      headers: { Authorization: `Bearer ${jwt}` }
+    });
+    const data = await res.json();
+    const goalDiv = document.getElementById('weekly-goal');
+    goalDiv.innerHTML = `<h3>Weekly Goal</h3>
+      <div>${data.tip}</div>
+      <div>Target: Reduce ${data.targetReduction} kg CO₂ in ${data.category || ''}</div>
+      <div>Current: ${data.total ? data.total.toFixed(1) : 0} kg CO₂</div>`;
+  } catch (err) {
+    document.getElementById('weekly-goal').innerHTML = '<h3>Weekly Goal</h3><div>Unable to load tip.</div>';
+  }
+}
+
+function setupWebSocketForTips() {
+  if (typeof io === 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.socket.io/4.7.5/socket.io.min.js';
+    script.onload = connectSocket;
+    document.body.appendChild(script);
+  } else {
+    connectSocket();
+  }
+}
+
+function connectSocket() {
+  const socket = io('http://localhost:3001');
+  socket.on('weeklyTip', (goal) => {
+    document.getElementById('weekly-goal').innerHTML = `<h3>Weekly Goal</h3>
+      <div>${goal.tip}</div>
+      <div>Target: Reduce ${goal.targetReduction} kg CO₂ in ${goal.category || ''}</div>
+      <div>Current: ${goal.total ? goal.total.toFixed(1) : 0} kg CO₂</div>`;
+  });
+}
 
 function addEventListeners() {
   catSelect.addEventListener("change", catChanged);
@@ -204,7 +242,6 @@ async function deleteActivity(id) {
 }
 
 async function fetchAndRenderSummary() {
-  // Use activitiesListArray for now
   let today = new Date().toDateString();
   let weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   let todayTotal = 0;
@@ -251,7 +288,6 @@ async function fetchAndRenderWeeklySummary() {
       streakDiv.id = 'weekly-streak';
       document.querySelector('.summary-section').appendChild(streakDiv);
     }
-    // Simple streak: count days with activity in last 7 days
     const days = new Set(data.map(a => new Date(a.timestamp).toDateString()));
     streakDiv.innerHTML = `<h3>Weekly Streak</h3><span>${days.size} days active</span>`;
   } catch (err) {}

@@ -1,4 +1,4 @@
-/* Auth page styles (shared for login/register) */
+
 .auth-container {
   max-width: 350px;
   margin: 60px auto;
@@ -59,7 +59,7 @@
   color: #4a5c2c;
   text-decoration: underline;
 }
-/* Modern Dashboard Styles */
+
 body {
   font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
   background: #f6f8fa;
@@ -261,7 +261,6 @@ button[type="submit"]:hover {
     width: 100%;
   }
 }
-/* Auth page styles */
 .auth-container {
   max-width: 350px;
   margin: 60px auto;
