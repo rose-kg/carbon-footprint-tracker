@@ -5,9 +5,8 @@ const auth = require('../middleware/authMiddleware');
 const router = express.Router();
 
 router.get('/weekly', auth, async (req, res) => {
-  const weekStart = new Date();
-  weekStart.setDate(weekStart.getDate() - weekStart.getDay()); 
-  const activities = await Activity.find({ user: req.user.id, timestamp: { $gte: weekStart } });
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const activities = await Activity.find({ user: req.user.id, timestamp: { $gte: weekAgo } });
   const totals = {};
   activities.forEach(a => {
     totals[a.category] = (totals[a.category] || 0) + a.co2Emissions;
