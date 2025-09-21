@@ -227,7 +227,7 @@ function renderActivitiesList() {
 
 async function deleteActivity(id) {
   try {
-    await fetch(`${API_URL}/activities/${id}`, {
+    const res = await fetch(`${API_URL}/activities/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${jwt}` },
     });
@@ -237,6 +237,7 @@ async function deleteActivity(id) {
     fetchAndRenderCommunityAverage();
     fetchAndRenderLeaderboard();
   } catch (err) {
+    console.error('Error deleting activity:', err);
     alert("Failed to delete activity");
   }
 }

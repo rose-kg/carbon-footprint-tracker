@@ -53,4 +53,18 @@ router.get('/leaderboard', async (req, res) => {
   res.json(leaderboard);
 });
 
+
+// Delete activity
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const activity = await Activity.findOneAndDelete({ _id: req.params.id, user: req.user.id });
+    if (!activity) {
+      return res.status(404).send('Activity not found');
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).send('Server error');
+  }
+});
+
 module.exports = router;
