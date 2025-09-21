@@ -195,11 +195,14 @@ async function fetchAndRenderActivities() {
       headers: { Authorization: `Bearer ${jwt}` },
     });
     let data = await res.json();
-    activitiesListArray = data;
+    activitiesListArray = Array.isArray(data) ? data.filter(a => a.timestamp && typeof a.co2Emissions === 'number') : [];
     renderActivitiesList();
     updateCategoryPieChart();
+    fetchAndRenderSummary();
   } catch (err) {
     actList.innerHTML = '<p class="no-activities">Failed to load activities.</p>';
+    activitiesListArray = [];
+    fetchAndRenderSummary();
   }
 }
 
@@ -243,16 +246,23 @@ async function deleteActivity(id) {
 }
 
 async function fetchAndRenderSummary() {
-  let today = new Date().toDateString();
-  let weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const now = new Date();
+  const todayYear = now.getFullYear();
+  const todayMonth = now.getMonth();
+  const todayDate = now.getDate();
+  const weekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6); // includes today
   let todayTotal = 0;
   let weekTotal = 0;
   activitiesListArray.forEach(function (act) {
-    let actDate = new Date(act.timestamp);
-    if (actDate.toDateString() === today) {
+    const actDate = new Date(act.timestamp);
+    if (
+      actDate.getFullYear() === todayYear &&
+      actDate.getMonth() === todayMonth &&
+      actDate.getDate() === todayDate
+    ) {
       todayTotal += act.co2Emissions;
     }
-    if (actDate >= weekAgo) {
+    if (actDate >= weekAgo && actDate <= now) {
       weekTotal += act.co2Emissions;
     }
   });

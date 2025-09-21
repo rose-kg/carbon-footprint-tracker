@@ -7,6 +7,7 @@ const router = express.Router();
 // Get user activities
 router.get('/', auth, async (req, res) => {
   const activities = await Activity.find({ user: req.user.id });
+  console.log(`[GET /api/activities] User: ${req.user.id}, Activities found: ${activities.length}`);
   res.json(activities);
 });
 
@@ -14,6 +15,7 @@ router.get('/', auth, async (req, res) => {
 router.post('/', auth, async (req, res) => {
   const activity = new Activity({ ...req.body, user: req.user.id });
   await activity.save();
+  console.log(`[POST /api/activities] User: ${req.user.id}, Activity saved: ${activity._id}`);
   res.json(activity);
 });
 
