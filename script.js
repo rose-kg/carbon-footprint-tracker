@@ -70,8 +70,8 @@ async function fetchAndRenderWeeklyGoal() {
     });
     const data = await res.json();
     const goalDiv = document.getElementById('weekly-goal');
-    goalDiv.innerHTML = `<h3>Weekly Goal</h3>
-      <div>${data.tip}</div>
+goalDiv.innerHTML = `<h3><span class="material-symbols-rounded">flag</span> Weekly Goal</h3>
+  <div class="goal-tip">${data.tip}</div>
       <div>Target: Reduce ${data.targetReduction} kg CO₂ in ${data.category || ''}</div>
       <div>Current: ${data.total ? data.total.toFixed(1) : 0} kg CO₂</div>`;
   } catch (err) {
