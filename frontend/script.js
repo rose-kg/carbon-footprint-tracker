@@ -46,7 +46,7 @@ let unitText = document.getElementById("unit-label");
 let form = document.getElementById("activity-form");
 let actList = document.getElementById("activities-list");
 
-const API_URL = "http://localhost:3001/api";
+const API_URL = "/api";
 const jwt = localStorage.getItem("jwt");
 
 if (!jwt) {
@@ -91,7 +91,7 @@ function setupWebSocketForTips() {
 }
 
 function connectSocket() {
-  const socket = io('http://localhost:3001');
+  const socket = io();
   socket.on('weeklyTip', (goal) => {
     document.getElementById('weekly-goal').innerHTML = `<h3>Weekly Goal</h3>
       <div>${goal.tip}</div>
@@ -167,7 +167,7 @@ async function formSubmitted(e) {
     timestamp: new Date().toISOString(),
   };
   try {
-    await fetch(`${API_URL}/activities`, {
+  await fetch(`${API_URL}/activities`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
