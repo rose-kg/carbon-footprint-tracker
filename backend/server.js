@@ -18,8 +18,8 @@ const path = require('path');
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // For any route not handled by API, serve index.html
-app.get('*', (req, res) => {
-	res.sendFile(path.join(__dirname, '../frontend/index.html'));
+app.get('/*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
 app.use('/api/auth', require('./routes/auth'));
