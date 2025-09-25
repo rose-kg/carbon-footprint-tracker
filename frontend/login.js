@@ -6,7 +6,7 @@ document.getElementById('login-form').addEventListener('submit', async function(
   errorDiv.textContent = '';
 
   try {
-    const res = await fetch('http://localhost:3001/api/auth/login', {
+  const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
@@ -45,7 +45,7 @@ document.getElementById('register-form').addEventListener('submit', async functi
   }
 
   try {
-    const res = await fetch('http://localhost:3001/api/auth/register', {
+  const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ fullName, email, username, password, confirmPassword })
