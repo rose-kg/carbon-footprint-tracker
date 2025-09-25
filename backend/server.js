@@ -13,6 +13,14 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 
 app.use(cors());
 app.use(express.json());
+const path = require('path');
+// Serve static files from the frontend folder
+app.use(express.static(path.join(__dirname, '../frontend')));
+
+// For any route not handled by API, serve index.html
+app.get('*', (req, res) => {
+	res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
 // Serve static files from frontend folder
 const path = require('path');
 app.use(express.static(path.join(__dirname, '../frontend')));
